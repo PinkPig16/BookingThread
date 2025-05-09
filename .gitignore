@@ -1,0 +1,18 @@
+# IDE
+.idea/
+*.sln.DotSettings*
+*.user
+
+# Build
+bin/
+obj/
+*.cache
+*.log
+
+# Rider-specific
+*.iml
+*.sln.iml
+
+# Backup
+*.bak
+*.tmp
