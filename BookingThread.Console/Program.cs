@@ -23,6 +23,26 @@ tasks.Add(Task.Run(() => bookingService.BookRoom(2)));
 tasks.Add(Task.Run(() => bookingService.BookRoom(2)));
 tasks.Add(Task.Run(() => bookingService.BookRoom(3)));
 tasks.Add(Task.Run(() => bookingService.BookRoom(1)));
+tasks.Add(Task.Run(() => bookingService.BookRoom(1)));
+tasks.Add(Task.Run(() => bookingService.BookRoom(2)));
+tasks.Add(Task.Run(() => bookingService.BookRoom(2)));
+tasks.Add(Task.Run(() => bookingService.BookRoom(3)));
+tasks.Add(Task.Run(() => bookingService.BookRoom(1)));
+tasks.Add(Task.Run(() => bookingService.BookRoom(1)));
+tasks.Add(Task.Run(() => bookingService.BookRoom(2)));
+tasks.Add(Task.Run(() => bookingService.BookRoom(2)));
+tasks.Add(Task.Run(() => bookingService.BookRoom(3)));
+tasks.Add(Task.Run(() => bookingService.BookRoom(1)));
+tasks.Add(Task.Run(() => bookingService.BookRoom(1)));
+tasks.Add(Task.Run(() => bookingService.BookRoom(2)));
+tasks.Add(Task.Run(() => bookingService.BookRoom(2)));
+tasks.Add(Task.Run(() => bookingService.BookRoom(3)));
+tasks.Add(Task.Run(() => bookingService.BookRoom(1)));
+tasks.Add(Task.Run(() => bookingService.BookRoom(2)));
+tasks.Add(Task.Run(() => bookingService.BookRoom(2)));
+tasks.Add(Task.Run(() => bookingService.BookRoom(3)));
+tasks.Add(Task.Run(() => bookingService.BookRoom(1)));
+tasks.Add(Task.Run(() => bookingService.BookRoom(1)));
 
 await Task.WhenAll(tasks);
 

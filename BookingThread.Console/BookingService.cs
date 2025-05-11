@@ -4,8 +4,8 @@ namespace BookingThread.Console;
 
 public class BookingService
 {
-    private const int _count = 2;
-    private readonly ConcurrentDictionary<int, SemaphoreSlim> _semaphoresRoom = new ConcurrentDictionary<int, SemaphoreSlim>();
+    private const int _count = 10;
+    private readonly ConcurrentDictionary<int, Lazy<SemaphoreSlim>> _semaphoresRoom = new ConcurrentDictionary<int, Lazy<SemaphoreSlim>>();
     private readonly Dictionary<int, Room> _rooms = RoomService.GetRooms();
     private readonly PaymentService _paymentService = new();
     private readonly LoggingService _loggingQueue = new();
@@ -19,11 +19,7 @@ public class BookingService
         try
         {
             System.Console.WriteLine($"Room Id: {roomId} before roomLock Thread Id: {Thread.CurrentThread.ManagedThreadId}");
-            if (!_semaphoresRoom.TryAdd(roomId, new SemaphoreSlim(1, 1)))
-                return null;
-            //Уже есть поток с таким же  roomId
-            if (!_semaphoresRoom.TryGetValue(roomId, out SemaphoreSlim roomLocker))
-                return null;
+            var roomLocker = _semaphoresRoom.GetOrAdd(roomId, _ => new Lazy<SemaphoreSlim>(() => new SemaphoreSlim(1, 1))).Value;
             
             await roomLocker.WaitAsync();
             System.Console.WriteLine($"Room Id: {roomId} after roomLock Thread Id: {Thread.CurrentThread.ManagedThreadId}");
