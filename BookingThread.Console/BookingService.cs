@@ -10,6 +10,7 @@ public class BookingService
     private readonly PaymentService _paymentService = new();
     private readonly LoggingService _loggingQueue = new();
     private static readonly SemaphoreSlim GlobalSemaphore = new(_count, _count);
+    private readonly object lockObject = new();
     public async Task<Room?> BookRoom(int roomId)
     {
         System.Console.WriteLine($"Room Id: {roomId} before globalSemaphore Thread Id: {Thread.CurrentThread.ManagedThreadId}");
@@ -20,29 +21,44 @@ public class BookingService
         {
             System.Console.WriteLine($"Room Id: {roomId} before roomLock Thread Id: {Thread.CurrentThread.ManagedThreadId}");
             var roomLocker = _semaphoresRoom.GetOrAdd(roomId, _ => new Lazy<SemaphoreSlim>(() => new SemaphoreSlim(1, 1))).Value;
+                                    
+            if (!_rooms.TryGetValue(roomId, out var room))
+            {
+                System.Console.WriteLine($"Room Id: {roomId} isn't found Thread Id: {Thread.CurrentThread.ManagedThreadId}");
+                return null;
+            }
             
             await roomLocker.WaitAsync();
             System.Console.WriteLine($"Room Id: {roomId} after roomLock Thread Id: {Thread.CurrentThread.ManagedThreadId}");
             try
             {
-                        
-                if (!_rooms.TryGetValue(roomId, out var room) || !room.IsAvailable)
+                if (!room.IsAvailable)
                 {
-                    System.Console.WriteLine($"Room Id: {roomId} isn't available or null Thread Id: {Thread.CurrentThread.ManagedThreadId}");
+                    System.Console.WriteLine($"Room Id: {roomId} isn't Available Thread Id: {Thread.CurrentThread.ManagedThreadId}");
                     return null;
                 }
-                
-                await _paymentService.Payment(roomId);
                 room.IsAvailable = false;
-                System.Console.WriteLine($"Room Id: {roomId} after Payment Thread Id: {Thread.CurrentThread.ManagedThreadId}");
-                _loggingQueue.EnqueueLog($"Room {roomId} has been booked Thread: {Thread.CurrentThread.ManagedThreadId}");
-                return room;
             }
             finally
             {
                 roomLocker.Release();
                 System.Console.WriteLine($"Room Id: {roomId} roomLock release Thread Id: {Thread.CurrentThread.ManagedThreadId}");
             }
+
+            try
+            {
+                await _paymentService.Payment(room);
+                System.Console.WriteLine($"Room Id: {roomId} after Payment Thread Id: {Thread.CurrentThread.ManagedThreadId}");
+                _loggingQueue.EnqueueLog($"Room {roomId} has been booked Thread: {Thread.CurrentThread.ManagedThreadId}");
+            }
+            catch (Exception ex)
+            {
+                await roomLocker.WaitAsync();
+                room.IsAvailable = true;
+                roomLocker.Release();
+            }
+
+            return room;
         }
         finally
         {
